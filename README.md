@@ -9,7 +9,7 @@
 [PostCSS hfill] lets you style contextual headings in CSS, like the [proposed `<h>` element].
 
 ```css
-x-h { font-size: 2em }
+x-h { display: block; font-size: 2em }
 
 article x-h,aside x-h,nav x-h,section x-h { font-size: 1.5em }
 

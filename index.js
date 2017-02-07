@@ -10,8 +10,8 @@ module.exports = postcss.plugin('postcss-hfill', ({
 	sizes       = ['2em', '1.5em', '1.17em', '1em'],
 	tag         = 'x-h'
 } = {}) => (root) => {
-	// generate contextual heading font-sizes using only element specificity
-	const cssRules = sizes.reduce(
+	// generate contextual heading styles using only element specificity
+	const cssText = sizes.reduce(
 		(rules, value, size) => {
 			const total = Math.pow(length, size);
 			const result = [];
@@ -30,39 +30,20 @@ module.exports = postcss.plugin('postcss-hfill', ({
 				result.push(combo);
 			}
 
-			return rules.concat(
-				postcss.rule({
-					selectors: result.map(
-						(x) => x.length ? x.join(' ').concat(` ${ tag }`) : tag
-					),
-					nodes: [
-						postcss.decl({
-							prop: 'font-size',
-							value: sizes[size],
-							source: source,
-							raws: declRaws
-						})
-					],
-					source: source,
-					raws: ruleRaws
-				})
-			);
+			return `${ rules + result.map(
+				(x) => x.length ? x.join(' ').concat(` ${ tag }`) : tag
+			).join(', ') } {${ size ? '' : ' display: block;' } font-size: ${ sizes[size] }; }\n`;
 		},
-		[]
+		''
 	);
 
-	// prepend contextual heading font-sizes using only element specificity
-	root.prepend(
-		cssRules
+	const cssRoot = postcss.parse(
+		cssText,
+		{
+			from: 'postcss-hfill'
+		}
 	);
+
+	// prepend contextual heading styles using only element specificity
+	root.prepend(cssRoot);
 });
-
-
-// minified raws
-const declRaws = { before: '', between: ':', after: '' };
-const ruleRaws = { before: '\n', between: '', after: '', semicolon: false };
-const source = {
-	input: {
-		file: 'postcss-hfill'
-	}
-};
